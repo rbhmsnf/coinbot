@@ -4,7 +4,7 @@ const cheerio = require('cheerio');
 class AliExpressLibrary {
     constructor(AppKey, API_SECRET, Tracking_ID, AdminID) {
         this.AdminID = AdminID;
-        this.generateMode = "cookies"; // api or cookies
+        this.generateMode = "api"; // api or cookies
         this.isInTimeout = false;
         this.API_URL = "https://api-sg.aliexpress.com/sync";
         this.AppKey = AppKey;
@@ -49,13 +49,14 @@ class AliExpressLibrary {
         let source_values;
             // genmode 2: wrap each URL as a star.aliexpress.com redirect
             const rawUrls = [
+                `https://m.aliexpress.com/p/coin-index/index.html?_immersiveMode=true&tabname=configTab_1926001&from=syicon&productIds=${id}`,
                 `https://ar.aliexpress.com/i/${id}.html?sourceType=620&channel=coin`,
                 `https://ar.aliexpress.com/i/${id}.html?sourceType=680`,
                 `https://ar.aliexpress.com/i/${id}.html?sourceType=561`,
                 `https://ar.aliexpress.com/i/${id}.html?sourceType=562`,
                 `https://ar.aliexpress.com/i/${id}.html?sourceType=504&channel=coin`,
                 `https://ar.aliexpress.com/i/${id}.html?sourceType=570&channel=coin`,
-                `https://vi.aliexpress.com/i/${id}.html?sourceType=620&channel=coin`, // pointsNew fallback
+                `https://vi.aliexpress.com/i/${id}.html?sourceType=620&channel=coin`,
                 `https://www.aliexpress.com/ssr/300000512/BundleDeals2?disableNav=YES&pha_manifest=ssr&_immersiveMode=true&productIds=${id}`,
             ];
             source_values = rawUrls
@@ -90,15 +91,15 @@ class AliExpressLibrary {
             const sourceValue = item.source_value;
             let key = 'limited';
             if (sourceValue) {
+                console.log("sourceValue: ", sourceValue);
                 if (sourceValue.includes('sourceType=561') || sourceValue.includes('sourceType%3D561'))  key = 'limited';
                 else if (sourceValue.includes('sourceType=562') || sourceValue.includes('sourceType%3D562'))  key = 'super';
                 else if (sourceValue.includes('sourceType=680') || sourceValue.includes('sourceType%3D680'))  key = 'bigsave';
                 else if (sourceValue.includes('sourceType=570') || sourceValue.includes('sourceType%3D570'))  key = 'choice';
                 else if (sourceValue.includes('sourceType=504') || sourceValue.includes('sourceType%3D504'))  key = 'mohtamal';
                 else if (sourceValue.includes('BundleDeals2'))    key = 'bundel';
-                else if ((sourceValue.includes('sourceType=620') || sourceValue.includes('sourceType%3D620')) && !sourceValue.includes('star.aliexpress')) key = 'points';
-                else if (sourceValue.includes('m.aliexpress.com/p/coin-index')) key = 'pointsNew';
-                else    key = 'pointsNew';
+                else if (sourceValue.includes('sourceType=620') || sourceValue.includes('sourceType%3D620')) key = 'points';
+                else if (sourceValue.includes('coin-index')) key = 'pointsNew';
             }
             if (mode == 2) result['api'] = "true";
             result[key] = item.promotion_link;
@@ -144,7 +145,7 @@ class AliExpressLibrary {
             TrackingId = "Rbhcoinbot";
         }
         console.log(TrackingId);
-        const targetBaseUrl = `https://vi.aliexpress.com/item/${id}.html`;
+        const targetBaseUrl = `https://www.aliexpress.com/i/${id}.html`;
         let affLinks = {};
         let results = {};
 
@@ -152,7 +153,7 @@ class AliExpressLibrary {
         const buildCookiesConfigs = (genmode) => {
             const makeUrl = (rawUrl) => {
                 if (genmode === 1) return rawUrl;
-                return `https://star.aliexpress.com/share/share.htm?redirectUrl=${encodeURIComponent(rawUrl.replace('s-click.aliexpress.com', 'vi.aliexpress.com'))}`;
+                return `https://star.aliexpress.com/share/share.htm?redirectUrl=${encodeURIComponent(rawUrl)}`;
             };
 
             const url620New = makeUrl(`https://m.aliexpress.com/p/coin-index/index.html?_immersiveMode=true&tabname=configTab_1926001&from=syicon&productIds=${id}`);
@@ -302,10 +303,11 @@ class AliExpressLibrary {
                     ]);
 
                     // Check if genmode 1 gave valid results (at least one success)
-                    const cookiesGenmode1Valid = responses.slice(0, 8).some(r => r.data.success);
+                    const cookiesGenmode1Valid = responses.slice(0, 8).every(r => r.data.success);
 
                     // If genmode 1 failed, redo the 8 cookie requests with genmode 2
                     let cookieResponses = responses.slice(0, 8);
+                    console.log("cookies genmode 1 responses: ", cookieResponses.map(r => r.data));
                     if (!cookiesGenmode1Valid) {
                         console.log('cookies genmode 1 failed, retrying with genmode 2');
                         cookieConfigs = buildCookiesConfigs(2);
@@ -320,6 +322,7 @@ class AliExpressLibrary {
                             axios.request(cookieConfigs[7]),
                         ]);
                         cookieResponses = retryResponses;
+                        console.log("cookies genmode 2 responses: ", cookieResponses.map(r => r.data));
                     }
 
                     // Map cookie responses (indices 0-7) + affiliate data (index 8 from original responses)
@@ -328,7 +331,7 @@ class AliExpressLibrary {
                     allResponses.forEach((response, index) => {
                         switch (index) {
                             case 0:
-                                if (response.data.success) affLinks['points'] = response.data.data;
+                                if (response.data.success) affLinks['points'] = response.data.data, console.log("points link: ", affLinks['points']);
                                 break;
                             case 1:
                                 if (response.data.success) affLinks['limited'] = response.data.data;
@@ -394,6 +397,7 @@ class AliExpressLibrary {
                 }
 
                 if (!('points' in affLinks)) {
+                    console.log('API did not return points link, generating with API as fallback');
                     affLinks = await this.generateApiLinkes(id, TrackingId, 2); // genmode defaults to 1, falls back to 2 internally
                     break;
                 }
@@ -404,6 +408,7 @@ class AliExpressLibrary {
                 erroracount++;
                 if (erroracount === 3) {
                     results = { "error": "tafa7a al kayl", "imgAvailable": "True" };
+                    console.log(id);
                     affLinks = await this.generateApiLinkes(id, TrackingId, 2);
                 }
             }
