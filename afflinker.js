@@ -4,7 +4,7 @@ const cheerio = require('cheerio');
 class AliExpressLibrary {
     constructor(AppKey, API_SECRET, Tracking_ID, AdminID) {
         this.AdminID = AdminID;
-        this.generateMode = "cookies"; // api or cookies
+        this.generateMode = "api"; // api or cookies
         this.isInTimeout = false;
         this.API_URL = "https://api-sg.aliexpress.com/sync";
         this.AppKey = AppKey;
