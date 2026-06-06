@@ -360,7 +360,7 @@ function getLinkType(url) {
 async function incrementUsage(chat_id, currentUsageCount) {
     try {
         // Increment the usage_count directly in the database
-        const { data, error } = await supabaseOriginal
+        const { data, error } = await supabase
             .from('users')
             .update({ usage_count: currentUsageCount + 1 })
             .eq('chat_id', chat_id)
@@ -737,7 +737,9 @@ ${links}
                                         });
                                 });
                             }
-                            await incrementUsage(ctx.chat.id ,usercount);
+                            (async () => {
+                                await incrementUsage(ctx.chat.id ,usercount);
+                            })();
                         })
                         .catch(error => {
                             console.error(error.message);
