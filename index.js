@@ -642,7 +642,7 @@ ${links}
                                                 if (coinPi.titleAvailable) {
                                                     productMessage = `🔰 تخفيض لـ : ${coinPi.ihtiyat.title}
 
-                                                    ${links}`;
+${links}`;
                                                 }
                                                 else {
                                                     productMessage = links;
