@@ -156,29 +156,9 @@ bot.telegram.setMyCommands([
     {
         command: 'start',
         description: 'بدء الاستخدام',
-    },
-    {
-        command: 'menu',
-        description: 'قائمة الأدوات',
-    },
+    }
 
 ]);
-
-
-bot.command(['menu'], async (ctx) => {
-    const replyMarkup = await {
-        inline_keyboard: [
-            [{ text: '🤖 طريقة عمل البوت 🤖', url: "https://t.me/sohdeh_channel/4" }],
-            [{ text: '🤖 طريقة اكتشاف المتجر اذا محتال 🤖', url: "https://t.me/sohdeh_channel/2137?single" }],
-            [{ text: '🛒 تخفيض العملات على منتجات السلة 🛒', callback_data: 'cart' },],
-            [{ text: '✨ تجد أفضل العروض هنا ✨', url: "https://t.me/${Channel}" }],
-            [{ text: '🌐 صفحتنا على فيسبوك 🌐📍', url: "https://www.facebook.com/sohdeh.profile" }],
-
-
-        ],
-    };
-    await ctx.reply(' ✨  مرحبا بك ' + ctx.chat.first_name + '  ✨ ', { reply_markup: replyMarkup });
-});
 
 
 bot.command(['start', 'help'], async (ctx) => {
@@ -208,37 +188,22 @@ bot.command(['start', 'help'], async (ctx) => {
             ],
             resize_keyboard: true,
             inline_keyboard: [
-                [{ text: '🤖 طريقة إستخدام البوت 🤖', url: "https://t.me/sohdeh_channel/4" }],
-                [{ text: '🤖 طريقة اكتشاف المتجر اذا محتال 🤖', url: "https://t.me/sohdeh_channel/2137?single" }],
-                [{ text: '✨ تجد أفضل العروض هنا ✨', url: "https://t.me/sohdeh_channel/4" }],
+                [{ text: '✨ تجد أفضل العروض هنا ✨', url: "https://t.me/${Channel}" }]
             ],
         };
     } else {
         replyMarkup = {
             inline_keyboard: [
-                [{ text: '🤖 طريقة إستخدام البوت 🤖', url: "https://t.me/sohdeh_channel/4" }],
-                [{ text: '🤖 طريقة اكتشاف المتجر اذا محتال 🤖', url: "https://t.me/sohdeh_channel/2137?single" }],
-                [{ text: '✨ تجد أفضل العروض هنا ✨', url: "https://t.me/sohdeh_channel/4" }],
+                [{ text: '✨ تجد أفضل العروض هنا ✨', url: "https://t.me/${Channel}" }]
             ],
         };
     }
-    const welcomeMessage = `
-✨ مرحبًا بك  
-وجودك هنا مش عادي… فقط الأذكياء يكتشفوني 😎  
-أنت الآن على خطوة من التسوق الذكي والآمن 💡
-
-🎯 مهمتي بسيطة:  
-🔍 نبحث لك عن أقل سعر  
-🛡️ ونكشف إذا المتجر موثوق أو نصاب
-
-📌 أرسل الآن رابط أي منتج من AliExpress  
-وسأفحصه فورًا 👇
-
-مثال (اضغط لنسخه و ارسله لي):  
-\`https://ar.aliexpress.com/item/1005009513463034.html\`
-
-تسوقك الآمن مهمتي 😌
-`;
+    const welcomeMessage = `مرحبًا بك في بوت 
+مهمة هذا البوت 🤖 معرفة أقل سعر للمنتج المراد شراءه 😍 حيث يعطيك 3 روابط
+⏪رابط تخفيض النقاط (العملات) حيث يقوم بزيادة التخفيض من 1%-2% لتصل حتى الى 24% حسب المنتج 🔥
+        ⏪رابط تخفيض نقاط  🔥
+        ⏪ رابط الباندل ديلز 🔥
+        🔴انسخ رابط المنتج وضعه في البوت وقارن بين الروابط الثلاث واشتري بأقل سعر وقم بتثبيت البوت (épinglée) لتسهيل استعماله.`;
 
     await ctx.reply(welcomeMessage, {
         parse_mode: 'Markdown',
@@ -248,25 +213,6 @@ bot.command(['start', 'help'], async (ctx) => {
 
 let responses = {};
 
-
-bot.action("cart", (ctx) => {
-    // ctx.answerCbQuery('Button pressed!');
-    const cartMessage = `بعد اكتشافك هذه الميزة فانت تستخدم طرق متطورة في الشراء احسنت 😎
-أدخل للسلة في حسابك ثم حدد المنتجات التي تريد شرائها فقط!!
-بعدها انسخ هذا الرابط وادخل من المتصفح (chrome) ⬇️
-https://s.click.aliexpress.com/e/_DmljMPz
-ستظهر لك عناصر السلة و تاكد من بقاء الذين حددتهم فقط.
-بعدها اضغط على شراء لكي تذهب لصفحة الشراء (لا تشتري منتجات بعد )
-عندما تظهر لك صفحة الدفع قم بنسخ الرابط و ارساله لي هنا ⬇️
-سارسل لك رابط آخر يدخلك لصفحة الشراء بسعر أقل ✅
-        `;
-    const replyMarkup = {
-        inline_keyboard: [
-            [{ text: '🛒 طريقة تخفيض السلة بالفيديو 🛒', url: "https://t.me/sohdeh_channel/1184" }]
-        ],
-    };
-    ctx.reply(cartMessage, { reply_markup: replyMarkup });
-});
 
 async function notifyMe(message, extra = {}) {
     try {
@@ -481,8 +427,8 @@ bot.on('message', async (ctx) => {
         return;
     }*/
 
-    // if (await isUserSubscribed(userIdToCheck) || usercount<5) {
-    if (1) {
+     if (await isUserSubscribed(userIdToCheck) || usercount<5) {
+    // if (1) {
         console.log('t')
         try {
             if (text === "/start") {
@@ -661,29 +607,19 @@ bot.on('message', async (ctx) => {
                                     aliExpressLib.getData(response_link, chatId)
                                         .then((coinPi) => {
                                             let image = '';
-                                            let links = `<blockquote>🔰 رابط المنتج في صفحة العملات: </blockquote>
+                                            let links = `🔰 رابط المنتج في صفحة العملات:
 ${coinPi.aff.pointsNew}
 
-<blockquote>🔰 رابط العملات القديم : </blockquote>
+🔰 رابط العملات القديم :
 ${coinPi.aff.points}
 
-<blockquote>🔰 رابط بندلز : </blockquote>
+🔰 رابط بندلز : 
 ادخل الى هذا الرابط :
 ${coinPi.aff.bundel}
 ثم اضف المنتج في السلة من هنا :
 ${coinPi.aff.choice}
 
-<blockquote>🔰 رابط السوبر ديلز : </blockquote>
-${coinPi.aff.super}
-                                            
-<blockquote>🔰 رابط العرض المحدود : </blockquote>
-${coinPi.aff.limited}
-
-<blockquote>🔰 رابط المحتمل : </blockquote>
-${coinPi.aff.mohtamal}
-                                            
-<blockquote>🔰 رابط bigsave : </blockquote>
-${coinPi.aff.bigsave} `;
+ `;
                                             let productMessage = "";
                                             console.log("coinPi : ", coinPi);
                                             if ('api' in coinPi.aff) {
