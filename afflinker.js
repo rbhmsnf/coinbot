@@ -1,10 +1,12 @@
 const crypto = require("crypto");
 const axios = require('axios');
 const cheerio = require('cheerio');
+const { HttpsProxyAgent } = require('https-proxy-agent');
 class AliExpressLibrary {
-    constructor(AppKey, API_SECRET, Tracking_ID, AdminID) {
+    constructor(AppKey, API_SECRET, Tracking_ID, AdminID,proxy = "") {
+        this.proxy = proxy;
         this.AdminID = AdminID;
-        this.generateMode = "cookies"; // api or cookies
+        this.generateMode = "api"; // api or cookies
         this.isInTimeout = false;
         this.API_URL = "https://api-sg.aliexpress.com/sync";
         this.AppKey = AppKey;
@@ -197,7 +199,7 @@ class AliExpressLibrary {
                 { ...config, url: `${base}${encodeURIComponent(urlbundel)}&afSmartRedirect=y` },// 7 bundel
             ];
         };
-
+        const proxyAgent = new HttpsProxyAgent(this.proxy);
         let config2 = {
             params: { 'gatewayAdapt': 'glo2vnm' },
             headers: {
@@ -215,7 +217,9 @@ class AliExpressLibrary {
                 'sec-fetch-user': '?1',
                 'upgrade-insecure-requests': '1',
                 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
-            }
+            },
+            proxy: false ,
+            httpsAgent: proxyAgent
         };
 
         let ihtiyat = { ...config2, url: `https://vi.aliexpress.com/i/${id}.html` };
@@ -225,7 +229,6 @@ class AliExpressLibrary {
         let titleAvailable = false;
         let checkdata = 1;
 
-        while (erroracount < 3 && !success) {
             try {
                 let responses = {};
 
@@ -268,6 +271,7 @@ class AliExpressLibrary {
                         }
                     });
                     if (checkdata == 0) {
+                        try {
                         console.log("checkdata is 0");
                         let ihtiyatresp = await axios.request(ihtiyat);
                         const html = ihtiyatresp.data;
@@ -281,6 +285,10 @@ class AliExpressLibrary {
                         imgAvailable = results.ihtiyat.image !== "";
                         titleAvailable = results.ihtiyat.title !== "";
                         console.log("ihtiyat : ", results.ihtiyat);
+                        } catch (error) {
+                        imgAvailable = false;
+                        titleAvailable = false;
+                        }
                     } else {
                         console.log("checkdata is not 0");
                         console.log("check : ", checkdata);
@@ -381,6 +389,9 @@ class AliExpressLibrary {
                     });
 
                     if (checkdata == 0) {
+                        try {
+                            
+                        
                         let ihtiyatresp = await axios.request(ihtiyat);
                         const html = ihtiyatresp.data;
                         const $ = cheerio.load(html);
@@ -393,6 +404,10 @@ class AliExpressLibrary {
                         imgAvailable = results.ihtiyat.image !== "";
                         titleAvailable = results.ihtiyat.title !== "";
                         console.log(results.ihtiyat);
+                        } catch (error) {
+                        imgAvailable = false;
+                        titleAvailable = false;
+                        }
                     }
                 }
 
@@ -412,7 +427,6 @@ class AliExpressLibrary {
                     affLinks = await this.generateApiLinkes(id, TrackingId, 2);
                 }
             }
-        }
         results['aff'] = affLinks;
         results['imgAvailable'] = imgAvailable;
         results['titleAvailable'] = titleAvailable;
@@ -423,7 +437,9 @@ class AliExpressLibrary {
         this.generateMode = mode;
         return this.generateMode;
     }
-
+    getGenerateMode() {
+        return this.generateMode;
+    }
     SetCookies = (cookies) => {
         console.log("SET:", cookies);
         this.cookies = cookies;
