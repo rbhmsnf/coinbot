@@ -460,7 +460,7 @@ async function updateCookieInSupabase(newCookieString) {
         try {
             // Fetch the first row ID to make sure we update the existing one
             const { data: existingData, error: fetchError } = await supabase
-                .from('generate_mode')
+                .from('generatemode')
                 .select('id') // assuming your table has an 'id' column
                 .limit(1);
 
@@ -469,7 +469,7 @@ async function updateCookieInSupabase(newCookieString) {
             if (existingData && existingData.length > 0) {
                 // Update the existing row
                 const { error: updateError } = await supabase
-                    .from('generate_mode')
+                    .from('generatemode')
                     .update({ mode: newMode })
                     .eq('id', existingData[0].id);
 
@@ -477,7 +477,7 @@ async function updateCookieInSupabase(newCookieString) {
             } else {
                 // If the table is completely empty, insert a new row
                 const { error: insertError } = await supabase
-                    .from('generate_mode')
+                    .from('generatemode')
                     .insert([{ mode: newMode }]);
 
                 if (insertError) throw insertError;
