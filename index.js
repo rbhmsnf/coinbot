@@ -404,44 +404,7 @@ async function sendPhotoAndMessage(ctx, img_s, messageLink, replyMarkup1) {
         // يمكنك إضافة إجراءات إضافية هنا إذا كنت ترغب في التعامل مع الأخطاء
     }
 }
-
-bot.on('message', async (ctx) => {
-
-    let message_type;
-    let isstore = false;
-    const chatId = ctx.chat.id;
-    const text = ctx.message.text || ctx.message.caption || '';
-    if (!text) {
-        ctx.reply('يتم معالجة النصوص فقط 😔 ،يرجى ارسال رابط منتج ALIEXPRESS')
-        return;
-    }
-    const userIdToCheck = ctx.message.from.id;
-    let usercount;
-    usercount = await getUseCount(ctx.chat.id);
-    console.log(ctx.chat);
-    await addUser(ctx.chat.first_name, ctx.chat.last_name, ctx.chat.username, chatId);
-    if (sessionState.waitingForCookie && chatId.toString() === AdminChatId) {
-        if (!text || text.trim() === "") {
-            notifyMe("الرجاء إدخال نص صالح");
-            return;
-        }
-
-        notifyMe("جاري تغيير الكوكيز...");
-
-        const result = await updateCookieInSupabase(text.trim());
-
-        if (result.success) {
-            notifyMe("تم التغيير بنجاح! 🎉");
-
-            aliExpressLib.SetCookies(text.trim());
-        } else {
-            notifyMe("خلات عليك الكوكيز مبغاوش يتعدلو");
-        }
-
-        sessionState.waitingForCookie = false;
-        return;
-    }
-    async function updateCookieInSupabase(newCookieString) {
+ async function updateCookieInSupabase(newCookieString) {
         try {
             // Fetch the first row ID to make sure we update the existing one
             const { data: existingData, error: fetchError } = await supabase
@@ -474,6 +437,46 @@ bot.on('message', async (ctx) => {
             return { success: false, error: e.message };
         }
     }
+bot.on('message', async (ctx) => {
+
+    let message_type;
+    let isstore = false;
+    const chatId = ctx.chat.id;
+    const text = ctx.message.text || ctx.message.caption || '';
+    if (!text) {
+        ctx.reply('يتم معالجة النصوص فقط 😔 ،يرجى ارسال رابط منتج ALIEXPRESS')
+        return;
+    }
+    const userIdToCheck = ctx.message.from.id;
+    let usercount;
+    usercount = await getUseCount(ctx.chat.id);
+    console.log(ctx.chat);
+    await addUser(ctx.chat.first_name, ctx.chat.last_name, ctx.chat.username, chatId);
+    if (sessionState.waitingForMode && chatId.toString() === AdminChatId) {
+        return;
+    }
+    if (sessionState.waitingForCookie && chatId.toString() === AdminChatId) {
+        if (!text || text.trim() === "") {
+            notifyMe("الرجاء إدخال نص صالح");
+            return;
+        }
+
+        notifyMe("جاري تغيير الكوكيز...");
+
+        const result = await updateCookieInSupabase(text.trim());
+
+        if (result.success) {
+            notifyMe("تم التغيير بنجاح! 🎉");
+
+            aliExpressLib.SetCookies(text.trim());
+        } else {
+            notifyMe("خلات عليك الكوكيز مبغاوش يتعدلو");
+        }
+
+        sessionState.waitingForCookie = false;
+        return;
+    }
+   
     /*if (isJomo3aTime()) {
         ctx.reply(`قال الله تعالى : { يَا أَيُّهَا الَّذِينَ آمَنُوا إِذَا نُودِيَ لِلصَّلاةِ مِنْ يَوْمِ الْجُمُعَةِ فَاسْعَوْا إِلَى ذِكْرِ اللَّهِ وَذَرُوا الْبَيْعَ} [الجمعة:9]
 استجابة لأمر الله تعالى، إن البوت الآن متوقف مؤقتا إلى نهاية صلاة الجمعة على الساعة 13:40 ( أي الواحدة و 40 دقيقة زوالا) . ✅
