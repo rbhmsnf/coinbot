@@ -414,7 +414,6 @@ class AliExpressLibrary {
                 if (!('points' in affLinks)) {
                     console.log('API did not return points link, generating with API as fallback');
                     affLinks = await this.generateApiLinkes(id, TrackingId, 2); // genmode defaults to 1, falls back to 2 internally
-                    break;
                 }
                 affLinks["mode"] = this.generateMode;
                 success = true;
