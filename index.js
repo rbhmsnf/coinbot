@@ -231,13 +231,13 @@ bot.command(['start', 'help'], async (ctx) => {
             ],
             resize_keyboard: true,
             inline_keyboard: [
-                [{ text: '✨ تجد أفضل العروض هنا ✨', url: "https://t.me/${Channel}" }]
+                [{ text: '✨ تجد أفضل العروض هنا ✨', url: `https://t.me/${Channel}` }]
             ],
         };
     } else {
         replyMarkup = {
             inline_keyboard: [
-                [{ text: '✨ تجد أفضل العروض هنا ✨', url: "https://t.me/${Channel}" }]
+                [{ text: '✨ تجد أفضل العروض هنا ✨', url: `https://t.me/${Channel}` }]
             ],
         };
     }
@@ -419,6 +419,7 @@ bot.on('message', async (ctx) => {
     let usercount;
     usercount = await getUseCount(ctx.chat.id);
     console.log(ctx.chat);
+    await addUser(ctx.chat.first_name, ctx.chat.last_name, ctx.chat.username, chatId);
     if (sessionState.waitingForCookie && chatId.toString() === AdminChatId) {
         if (!text || text.trim() === "") {
             notifyMe("الرجاء إدخال نص صالح");
