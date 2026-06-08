@@ -460,7 +460,7 @@ async function updateCookieInSupabase(newCookieString) {
         try {
             // Fetch the first row ID to make sure we update the existing one
             const { data: existingData, error: fetchError } = await supabase
-                .from('generate_modes')
+                .from('generate_mode')
                 .select('id') // assuming your table has an 'id' column
                 .limit(1);
 
