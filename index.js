@@ -531,13 +531,10 @@ bot.on('message', async (ctx) => {
                         };
 
                         const getFinalIdIfStartsWith3 = async (url) => {
-                            const proxyUrl = proxy;
-                            const httpsAgent = new HttpsProxyAgent(proxyUrl);
                             try {
                                 const response = await axios.head(url, {
                                     maxRedirects: 0,
-                                    validateStatus: (status) => status >= 200 && status < 400,
-                                    httpsAgent,
+                                    validateStatus: (status) => status >= 200 && status < 400
                                 });
 
                                 const finalUrl = decodeURIComponent(response.headers.location || '');
