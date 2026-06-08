@@ -16,8 +16,9 @@ const AdminChatId = process.env.AdminChatId;
 const IdChannel = process.env.ChannelId;
 const Channel = process.env.ChannelUser;
 const link_cart = process.env.cart;
+const proxy = process.env.proxy || "http://jicaojup-rotate:s43a9fo6n6bq@p.webshare.io:80/";
 const bot = new Telegraf(botToken);
-const aliExpressLib = new AliExpressLibrary(appkey, secertkey, tarckin_id, AdminChatId);
+const aliExpressLib = new AliExpressLibrary(appkey, secertkey, tarckin_id, AdminChatId, proxy);
 const aliExpressLibCart = new AliExpressLibraryCart(appkey, secertkey, tarckin_id);
 const { createClient } = require('@supabase/supabase-js');
 // Original Supabase credentials
@@ -25,14 +26,15 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 let sessionState = {
-    waitingForCookie: false
+    waitingForCookie: false,
+    waitingForMode: false
 };
 
 // 1. Updated Admin Keyboard with the new cookie button
 const markup_admin = {
     reply_markup: {
         keyboard: [
-            ['تغيير الكوكيز'], // Added button here
+            ['تغيير الكوكيز'], ['تغيير وضع التوليد'], // Added button here
         ],
         resize_keyboard: true
     }
@@ -47,27 +49,68 @@ const markup_cancel_cookie = {
         resize_keyboard: true,
     }
 };
+const markup_cancel_mode = {
+    reply_markup: {
+        keyboard: [
+            ['وضع api', 'وضع cookies'],
+            ['إلغاء تغيير وضع التوليد']
+        ],
+        resize_keyboard: true,
+    }
+};
 
-/**
- * STEP 1: Admin clicks "تغيير الكوكيز"
- */
 bot.hears('تغيير الكوكيز', async (ctx) => {
     sessionState.waitingForCookie = true;
-
-    // Prompt the admin to paste the long string
     notifyMe("يرجى لصق الكوكيز الجديدة الآن: ", markup_cancel_cookie);
 });
 
-/**
- * STEP 2: Admin decides to Cancel
- */
-bot.hears('إلغاء تغيير الكوكيز', async (ctx) => {
-    sessionState.waitingForCookie = false;
-
-    // Prompt the admin to paste the long string
-    notifyMe("تم إلغاء العملية ولم يتغير شيء.", markup_admin);
+bot.hears('تغيير وضع التوليد', async (ctx) => {
+    sessionState.waitingForMode = true;
+    notifyMe("الوضع العالي هو ," + aliExpressLib.getGenerateMode() + " يرجى تحديد وضع التوليد الجديد : ", markup_cancel_mode);
 });
 
+bot.hears('وضع api', async (ctx) => {
+    sessionState.waitingForMode = false;
+    aliExpressLib.changeGenerateMode('api');
+    notifyMe("تم تغيير وضع التوليد إلى api.", markup_admin);
+});
+bot.hears('وضع cookies', async (ctx) => {
+    sessionState.waitingForMode = false;
+    aliExpressLib.changeGenerateMode('cookies');
+    notifyMe("تم تغيير وضع التوليد إلى cookies.", markup_admin);
+});
+
+
+bot.hears('إلغاء تغيير الكوكيز', async (ctx) => {
+    sessionState.waitingForCookie = false;
+    notifyMe("تم إلغاء العملية ولم يتغير شيء.", markup_admin);
+});
+bot.hears('إلغاء تغيير وضع التوليد', async (ctx) => {
+    sessionState.waitingForMode = false;
+    notifyMe("تم إلغاء العملية ولم يتغير شيء.", markup_admin);
+});
+async function reLoadMode() {
+    try {
+        // Fetch the updated user's usage_count and product_message_type
+        const { data, error: selectError } = await supabase
+            .from('generateMode')
+            .select('mode')
+            .limit(1)
+        if (selectError) throw selectError;
+        const mode = data?.[0]?.mode;
+
+        if (!mode) {
+            notifyMe("ما كاين حتى mode");
+            return;
+        }
+        // Return an array containing coockie
+        aliExpressLib.SetMode(mode);
+        notifyMe("mode found on supabase is : " + mode);
+    } catch (e) {
+        console.error(`حدث خطأ: ${e.message}`);
+        notifyMe("yaw khlat generate mode mabghach yatbadl (high problem on supabase found)\ncontact @desoh now for help!");
+    }
+}
 let couponRanges = [];
 // New Supabase credentials for referral functionality
 app.use(bot.webhookCallback('/bot'))
@@ -223,6 +266,16 @@ async function notifyMe(message, extra = {}) {
 }
 async function addUser(first_name, last_name, user_name, chat_id) {
     try {
+        // تحقق إذا كان المستخدم مسجل
+        const { data: existingUser, error: fetchError } = await supabase
+            .from('users')
+            .select('id')
+            .eq('chat_id', chat_id)
+            .single();
+
+        if (existingUser) {
+            return true; // User already exists, no need to insert
+        }
         // Perform upsert
         const { error: upsertError } = await supabase
             .from('users')
@@ -427,8 +480,8 @@ bot.on('message', async (ctx) => {
         return;
     }*/
 
-     if (await isUserSubscribed(userIdToCheck) || usercount<5) {
-    // if (1) {
+    if (await isUserSubscribed(userIdToCheck) || usercount < 5) {
+        // if (1) {
         console.log('t')
         try {
             if (text === "/start") {
@@ -474,7 +527,7 @@ bot.on('message', async (ctx) => {
                         };
 
                         const getFinalIdIfStartsWith3 = async (url) => {
-                            const proxyUrl = 'http://Tl6jGM2dQvlgJjWc:WJOX6yDLmEWGRi7U_country-dz@geo.iproyal.com:12321';
+                            const proxyUrl = proxy;
                             const httpsAgent = new HttpsProxyAgent(proxyUrl);
                             try {
                                 const response = await axios.head(url, {
@@ -674,7 +727,7 @@ ${links}`;
                                 });
                             }
                             (async () => {
-                                await incrementUsage(ctx.chat.id ,usercount);
+                                await incrementUsage(ctx.chat.id, usercount);
                             })();
                         })
                         .catch(error => {
