@@ -71,11 +71,29 @@ bot.hears('تغيير وضع التوليد', async (ctx) => {
 
 bot.hears('وضع api', async (ctx) => {
     sessionState.waitingForMode = false;
+    const result = await updateModeInSupabase('api');
+
+        if (result.success) {
+            notifyMe("تم التغيير بنجاح! 🎉");
+
+            aliExpressLib.changeGenerateMode('api');
+        } else {
+            notifyMe("خلات عليك وضع التوليد مبغاش يتعدل");
+        }
     aliExpressLib.changeGenerateMode('api');
     notifyMe("تم تغيير وضع التوليد إلى api.", markup_admin);
 });
 bot.hears('وضع cookies', async (ctx) => {
     sessionState.waitingForMode = false;
+    const result = await updateModeInSupabase('cookies');
+
+        if (result.success) {
+            notifyMe("تم التغيير بنجاح! 🎉");
+
+            aliExpressLib.changeGenerateMode('cookies');
+        } else {
+            notifyMe("خلات عليك وضع التوليد مبغاش يتعدل");
+        }
     aliExpressLib.changeGenerateMode('cookies');
     notifyMe("تم تغيير وضع التوليد إلى cookies.", markup_admin);
 });
@@ -404,7 +422,7 @@ async function sendPhotoAndMessage(ctx, img_s, messageLink, replyMarkup1) {
         // يمكنك إضافة إجراءات إضافية هنا إذا كنت ترغب في التعامل مع الأخطاء
     }
 }
- async function updateCookieInSupabase(newCookieString) {
+async function updateCookieInSupabase(newCookieString) {
         try {
             // Fetch the first row ID to make sure we update the existing one
             const { data: existingData, error: fetchError } = await supabase
@@ -437,6 +455,40 @@ async function sendPhotoAndMessage(ctx, img_s, messageLink, replyMarkup1) {
             return { success: false, error: e.message };
         }
     }
+
+    async function updateModeInSupabase(newMode) {
+        try {
+            // Fetch the first row ID to make sure we update the existing one
+            const { data: existingData, error: fetchError } = await supabase
+                .from('generate_modes')
+                .select('id') // assuming your table has an 'id' column
+                .limit(1);
+
+            if (fetchError) throw fetchError;
+
+            if (existingData && existingData.length > 0) {
+                // Update the existing row
+                const { error: updateError } = await supabase
+                    .from('generate_mode')
+                    .update({ mode: newMode })
+                    .eq('id', existingData[0].id);
+
+                if (updateError) throw updateError;
+            } else {
+                // If the table is completely empty, insert a new row
+                const { error: insertError } = await supabase
+                    .from('generate_mode')
+                    .insert([{ mode: newMode }]);
+
+                if (insertError) throw insertError;
+            }
+
+            return { success: true };
+        } catch (e) {
+            console.error(`Error updating Supabase: ${e.message}`);
+            return { success: false, error: e.message };
+        }
+    }
 bot.on('message', async (ctx) => {
 
     let message_type;
@@ -452,15 +504,11 @@ bot.on('message', async (ctx) => {
     usercount = await getUseCount(ctx.chat.id);
     console.log(ctx.chat);
     await addUser(ctx.chat.first_name, ctx.chat.last_name, ctx.chat.username, chatId);
-    if (sessionState.waitingForMode && chatId.toString() === AdminChatId) {
-        return;
-    }
     if (sessionState.waitingForCookie && chatId.toString() === AdminChatId) {
         if (!text || text.trim() === "") {
             notifyMe("الرجاء إدخال نص صالح");
             return;
         }
-
         notifyMe("جاري تغيير الكوكيز...");
 
         const result = await updateCookieInSupabase(text.trim());
@@ -476,7 +524,7 @@ bot.on('message', async (ctx) => {
         sessionState.waitingForCookie = false;
         return;
     }
-   
+    
     /*if (isJomo3aTime()) {
         ctx.reply(`قال الله تعالى : { يَا أَيُّهَا الَّذِينَ آمَنُوا إِذَا نُودِيَ لِلصَّلاةِ مِنْ يَوْمِ الْجُمُعَةِ فَاسْعَوْا إِلَى ذِكْرِ اللَّهِ وَذَرُوا الْبَيْعَ} [الجمعة:9]
 استجابة لأمر الله تعالى، إن البوت الآن متوقف مؤقتا إلى نهاية صلاة الجمعة على الساعة 13:40 ( أي الواحدة و 40 دقيقة زوالا) . ✅
@@ -531,10 +579,13 @@ bot.on('message', async (ctx) => {
                         };
 
                         const getFinalIdIfStartsWith3 = async (url) => {
+                            const proxyUrl = proxy;
+                            const httpsAgent = new HttpsProxyAgent(proxyUrl);
                             try {
                                 const response = await axios.head(url, {
                                     maxRedirects: 0,
-                                    validateStatus: (status) => status >= 200 && status < 400
+                                    validateStatus: (status) => status >= 200 && status < 400,
+                                    httpsAgent,
                                 });
 
                                 const finalUrl = decodeURIComponent(response.headers.location || '');
@@ -728,7 +779,7 @@ ${links}`;
                                 });
                             }
                             (async () => {
-                                await incrementUsage(ctx.chat.id, usercount+1);
+                                await incrementUsage(ctx.chat.id, usercount);
                             })();
                         })
                         .catch(error => {
