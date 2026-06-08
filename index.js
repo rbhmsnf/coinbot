@@ -728,7 +728,7 @@ ${links}`;
                                 });
                             }
                             (async () => {
-                                await incrementUsage(ctx.chat.id, usercount);
+                                await incrementUsage(ctx.chat.id, usercount+1);
                             })();
                         })
                         .catch(error => {
