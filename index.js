@@ -668,7 +668,7 @@ if (ctx.chat.type !== 'private') {
                     };
                     let iddexmanzjek = await idCatcher(links[0], 1);
                     console.log(iddexmanzjek);
-                    ctx.reply('دعني أفحص المنتج و المتجر بعناية 🕵')
+                    ctx.reply('... جاري معالجة طلبك 🔎')
                         .then((message) => {
 
                             if (links[0].includes("/p/trade/confirm.html")) {
