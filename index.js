@@ -490,6 +490,9 @@ async function updateCookieInSupabase(newCookieString) {
         }
     }
 bot.on('message', async (ctx) => {
+if (ctx.chat.type === 'channel' || (ctx.chat.is_forum && !ctx.message.message_thread_id)) {
+    return;
+  }
 
     let message_type;
     let isstore = false;
