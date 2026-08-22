@@ -489,6 +489,7 @@ async function updateCookieInSupabase(newCookieString) {
             return { success: false, error: e.message };
         }
     }
+
 bot.on('message', async (ctx) => {
 if (ctx.chat.type !== 'private') {
         return;
@@ -722,10 +723,7 @@ ${coinPi.aff.pointsNew}
 ${coinPi.aff.points}
 
 🔰 رابط بندلز : 
-ادخل الى هذا الرابط :
 ${coinPi.aff.bundel}
-ثم اضف المنتج في السلة من هنا :
-${coinPi.aff.choice}
 
  `;
                                             let productMessage = "";
