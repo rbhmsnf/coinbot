@@ -7,7 +7,7 @@ class AliExpressLibrary {
     constructor(AppKey, API_SECRET, Tracking_ID, AdminID, proxy = "") {
         this.proxy = proxy;
         this.AdminID = AdminID;
-        this.generateMode = "api"; // api or cookies
+        this.generateMode = "cookies"; // api or cookies
         this.isInTimeout = false;
         this.API_URL = "https://api-sg.aliexpress.com/sync";
         this.AppKey = AppKey;
