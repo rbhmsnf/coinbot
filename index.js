@@ -396,7 +396,7 @@ async function getUseCount(chat_id) {
         // Fetch the updated user's usage_count and product_message_type
         const { data, error: selectError } = await supabase
             .from('users')
-            .select('usage_count, product_message_type')
+            .select('usage_count')
             .eq('chat_id', chat_id)
             .limit(1);
         console.log(data);
