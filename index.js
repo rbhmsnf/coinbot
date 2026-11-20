@@ -131,7 +131,7 @@ async function reLoadMode() {
 }
 let couponRanges = [];
 // New Supabase credentials for referral functionality
-app.use(bot.webhookCallback('/bot'))
+app.use(bot.webhookCallback('/bot'));
 
 app.get('/', (req, res) => { res.sendStatus(200) });
 // Sur votre backend Node.js/Express
@@ -804,15 +804,23 @@ ${links}`;
     }
 });
 
-app.listen(3000, () => {
-    bot.launch();
-    /*bot.telegram.setWebhook(`${process.env.RENDER_EXTERNAL_URL}/bot`)
-        .then(() => {*/
-    console.log('Webhook Set ✅ & Server is running on port 3000 💻');
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, async () => {
+    console.log(`Server is running on port ${PORT} 💻`);
+    
+    try {
+        // 3. Tell Telegram to send updates to your Render URL
+        const webhookUrl = `${process.env.RENDER_EXTERNAL_URL}/bot`;
+        await bot.telegram.setWebhook(webhookUrl);
+        console.log(`Webhook Set ✅: ${webhookUrl}`);
+    } catch (err) {
+        console.error('Failed to set webhook:', err);
+    }
+
     ping();
     keepAppRunning();
-    reLoadCoockies()
-    // });
+    reLoadCoockies();
 });
 // bot.launch({ webhook: { domain: process.env.RENDER_EXTERNAL_URL, port: process.env.PORT }, allowedUpdates: ['message', 'callback_query'], })
 //     .then(() => {
