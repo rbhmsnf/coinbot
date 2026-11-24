@@ -536,8 +536,8 @@ if (ctx.chat.type !== 'private') {
         return;
     }*/
 
-    if (await isUserSubscribed(userIdToCheck) || usercount < 5) {
-        // if (1) {
+  /*  if (await isUserSubscribed(userIdToCheck) || usercount < 5) {*/
+        if (1) {
         console.log('t')
         try {
             if (text === "/start") {
