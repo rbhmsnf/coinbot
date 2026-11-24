@@ -339,7 +339,7 @@ async function reLoadCoockies() {
 
 async function isUserSubscribed(user_id) {
     try {
-        const user_info = await bot.telegram.getChatMember(-1002004335860, user_id);
+        const user_info = await bot.telegram.getChatMember(IdChannel, user_id);
         console.log(user_info);
         return ['member', 'administrator', 'creator'].includes(user_info.status);
     } catch (e) {
@@ -536,8 +536,8 @@ if (ctx.chat.type !== 'private') {
         return;
     }*/
 
-   // if (await isUserSubscribed(userIdToCheck)) {
-       if (1) {
+    if (await isUserSubscribed(userIdToCheck)) {
+       //if (1) {
         console.log('t')
         try {
             if (text === "/start") {
