@@ -505,7 +505,7 @@ if (ctx.chat.type !== 'private') {
     }
     const userIdToCheck = ctx.message.from.id;
     let usercount;
-    usercount = await getUseCount(ctx.chat.id);
+    // usercount = await getUseCount(ctx.chat.id);
     console.log(ctx.chat);
     await addUser(ctx.chat.first_name, ctx.chat.last_name, ctx.chat.username, chatId);
     if (sessionState.waitingForCookie && chatId.toString() === AdminChatId) {
@@ -780,7 +780,7 @@ ${links}`;
                                 });
                             }
                             (async () => {
-                                await incrementUsage(ctx.chat.id, usercount);
+                                // await incrementUsage(ctx.chat.id, usercount);
                             })();
                         })
                         .catch(error => {
